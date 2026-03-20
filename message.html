@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Flight Route — Tokyo to Singapore</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Barlow+Condensed:wght@300;400;700&family=Barlow:wght@300;400&display=swap" rel="stylesheet">
@@ -9,175 +10,287 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 
 html, body {
-  width:1920px; height:1080px;
+  width:100%; height:100%;
   overflow:hidden;
   background:#01060f;
   font-family:'Barlow', sans-serif;
 }
 
 canvas {
-  position:absolute; top:0; left:0;
+  position:fixed; top:0; left:0;
   display:block;
 }
 
 .ui {
-  position:absolute; top:0; left:0;
-  width:1920px; height:1080px;
+  position:fixed; top:0; left:0;
+  width:100%; height:100%;
   pointer-events:none;
 }
 
 /* ---- HEADER ---- */
 .header {
-  position:absolute; top:52px; left:80px;
+  position:absolute;
+  top:calc(env(safe-area-inset-top, 0px) + 28px);
+  left:24px;
   opacity:0;
-  transition:opacity 1s ease;
+  transition:opacity 0.3s ease;
 }
-.header.visible { opacity:1; }
 .label-small {
   font-family:'Cormorant Garamond', serif;
-  font-size:15px; font-weight:300; font-style:italic;
-  letter-spacing:7px; color:#c8a96e;
+  font-size:11px; font-weight:300; font-style:italic;
+  letter-spacing:5px; color:#c8a96e;
   text-transform:uppercase;
 }
 .route-code {
   font-family:'Barlow Condensed', sans-serif;
-  font-size:88px; font-weight:700;
-  color:#fff; letter-spacing:5px;
-  line-height:0.9; margin-top:6px;
+  font-size:clamp(38px, 12vw, 88px); font-weight:700;
+  color:#fff; letter-spacing:3px;
+  line-height:0.9; margin-top:4px;
 }
 
-/* ---- BOTTOM BAR ---- */
-.bottom-bar {
-  position:absolute; bottom:0; left:0; right:0;
-  height:172px;
-  background:linear-gradient(to top, rgba(1,6,15,0.97) 55%, rgba(1,6,15,0.7) 80%, transparent);
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 80px 24px;
-  opacity:0; transition:opacity 1s ease;
-}
-.bottom-bar.visible { opacity:1; }
-
-.city-block { display:flex; flex-direction:column; }
-.city-block.right { align-items:flex-end; }
-
-.iata {
-  font-family:'Barlow Condensed', sans-serif;
-  font-size:78px; font-weight:700;
-  color:#fff; letter-spacing:5px; line-height:1;
-}
-.city-name {
-  font-family:'Cormorant Garamond', serif;
-  font-size:22px; font-weight:300; font-style:italic;
-  color:#c8a96e; letter-spacing:4px; margin-top:2px;
-}
-.airport-jp {
-  font-family:'Barlow Condensed', sans-serif;
-  font-size:17px; font-weight:300;
-  color:rgba(255,255,255,0.35); letter-spacing:3px; margin-top:4px;
-}
-
-.center-block {
-  display:flex; flex-direction:column; align-items:center; gap:10px;
-}
-.flight-time {
-  font-family:'Barlow Condensed', sans-serif;
-  font-size:52px; font-weight:700;
-  color:#c8a96e; letter-spacing:4px; line-height:1;
-}
-.flight-time-label {
-  font-family:'Barlow', sans-serif; font-size:12px; font-weight:300;
-  color:rgba(255,255,255,0.35); letter-spacing:6px; text-transform:uppercase;
-}
-.flight-km {
-  font-family:'Barlow Condensed', sans-serif; font-size:20px; font-weight:300;
-  color:rgba(255,255,255,0.25); letter-spacing:3px;
-}
-
-.separator {
-  font-family:'Barlow Condensed', sans-serif;
-  font-size:30px; font-weight:300;
-  color:rgba(200,169,110,0.25); padding:0 40px;
-}
 
 /* Vignette */
 .vignette {
   position:absolute; top:0; left:0; width:100%; height:100%;
-  background:radial-gradient(ellipse 90% 80% at 60% 40%,
-    transparent 20%, rgba(1,6,15,0.5) 80%, rgba(1,6,15,0.8) 100%);
+  background:radial-gradient(ellipse 85% 75% at 60% 40%,
+    transparent 20%, rgba(1,6,15,0.45) 75%, rgba(1,6,15,0.75) 100%);
 }
 .edge-l {
-  position:absolute; top:0; left:0; width:180px; height:100%;
+  position:absolute; top:0; left:0; width:12%; height:100%;
   background:linear-gradient(to right, rgba(1,6,15,0.65), transparent);
 }
 .edge-r {
-  position:absolute; top:0; right:0; width:180px; height:100%;
+  position:absolute; top:0; right:0; width:12%; height:100%;
   background:linear-gradient(to left, rgba(1,6,15,0.65), transparent);
 }
 .edge-t {
-  position:absolute; top:0; left:0; right:0; height:120px;
+  position:absolute; top:0; left:0; right:0; height:12%;
   background:linear-gradient(to bottom, rgba(1,6,15,0.6), transparent);
+}
+
+/* ============================================================
+   SCENE 3 — QUIZ
+============================================================ */
+.scene3 {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  opacity:0; pointer-events:none;
+  padding:calc(env(safe-area-inset-top,0px) + 36px) 20px calc(env(safe-area-inset-bottom,0px) + 52px);
+}
+.scene3.active { pointer-events:auto; }
+
+.q-card {
+  margin-bottom:18px;
+  padding:18px 16px 16px;
+  background:rgba(1,8,22,0.78);
+  border:1px solid rgba(200,169,110,0.18);
+  border-radius:14px;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  transition:border-color 0.5s;
+}
+.q-card.solved { border-color:rgba(200,169,110,0.5); }
+.q-num {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:10px; font-weight:400; letter-spacing:5px;
+  color:#c8a96e; text-transform:uppercase; margin-bottom:8px;
+}
+.q-text {
+  font-family:'Barlow',sans-serif;
+  font-size:13.5px; font-weight:300; line-height:1.75;
+  color:rgba(255,255,255,0.82); margin-bottom:14px;
+}
+.q-boxes { display:flex; flex-wrap:wrap; gap:5px; }
+.q-box { position:relative; }
+.q-box input {
+  width:34px; height:40px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:7px;
+  color:#fff;
+  font-family:'Hiragino Sans','Noto Sans JP',sans-serif;
+  font-size:18px; font-weight:400;
+  text-align:center;
+  outline:none; caret-color:transparent;
+  -webkit-appearance:none; appearance:none;
+  transition:border-color 0.2s, background 0.2s;
+  display:block;
+}
+.q-box input:focus {
+  border-color:#c8a96e;
+  background:rgba(200,169,110,0.1);
+}
+.q-box.key-box input { border-color:rgba(200,169,110,0.45); }
+.q-box .key-num {
+  position:absolute; top:2px; left:3px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:8px; font-weight:700; color:#c8a96e;
+  pointer-events:none; line-height:1; z-index:1;
+}
+.q-card.solved .q-box input {
+  background:rgba(200,169,110,0.1);
+  border-color:rgba(200,169,110,0.38);
+  color:#c8a96e;
+  pointer-events:none;
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  15%{transform:translateX(-7px)} 30%{transform:translateX(7px)}
+  45%{transform:translateX(-5px)} 60%{transform:translateX(5px)}
+  75%{transform:translateX(-3px)} 90%{transform:translateX(3px)}
+}
+.q-boxes.shaking { animation:shake 0.45s ease; }
+
+.final-section {
+  margin-top:4px; margin-bottom:12px;
+  padding:24px 16px 22px;
+  background:rgba(1,8,22,0.78);
+  border:1px solid rgba(200,169,110,0.18);
+  border-radius:14px;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  text-align:center;
+}
+.final-top, .final-bottom {
+  font-family:'Cormorant Garamond',serif;
+  font-size:15px; font-weight:300; font-style:italic;
+  color:rgba(255,255,255,0.5); letter-spacing:3px;
+}
+.final-top { margin-bottom:16px; }
+.final-bottom { margin-top:16px; }
+.final-boxes { display:flex; justify-content:center; gap:7px; }
+.final-box {
+  width:40px; height:46px;
+  border:1px solid rgba(200,169,110,0.28);
+  border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Hiragino Sans','Noto Sans JP',sans-serif;
+  font-size:20px; color:transparent;
+  background:rgba(200,169,110,0.04);
+  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.final-box.filled {
+  color:#c8a96e;
+  background:rgba(200,169,110,0.12);
+  border-color:#c8a96e;
+  box-shadow:0 0 14px rgba(200,169,110,0.3);
+  transform:scale(1.06);
 }
 </style>
 </head>
 <body>
 
-<canvas id="c" width="1920" height="1080"></canvas>
+<canvas id="c"></canvas>
 
 <div class="ui">
   <div class="vignette"></div>
   <div class="edge-l"></div><div class="edge-r"></div><div class="edge-t"></div>
 
+  <div class="header" id="hdr">
+    <div class="label-small">Flight Route</div>
+    <div class="route-code">HND → SIN</div>
+  </div>
 
+</div>
 
-  <div class="bottom-bar" id="bar">
-    <div class="city-block">
-      <div class="iata">HND</div>
-      <div class="city-name">Tokyo, Japan</div>
-      <div class="airport-jp">東京国際空港（羽田）</div>
+<div class="scene3" id="scene3">
+  <div class="q-card" id="qcard-0">
+    <div class="q-num">Q · 01</div>
+    <div class="q-text">僕が凜ちゃんに贈ったプリザーブドフラワーボックスのブランドは？</div>
+    <div class="q-boxes" id="qboxes-0"></div>
+  </div>
+  <div class="q-card" id="qcard-1">
+    <div class="q-num">Q · 02</div>
+    <div class="q-text">2025年8月に初めて訪れ、次回の予約を取ったら「また来年！」と言われたお店は？</div>
+    <div class="q-boxes" id="qboxes-1"></div>
+  </div>
+  <div class="q-card" id="qcard-2">
+    <div class="q-num">Q · 03</div>
+    <div class="q-text">クレヴィアの内見を優しく案内してくれたものの、後に豹変した萩谷っちが属する不動産会社は？</div>
+    <div class="q-boxes" id="qboxes-2"></div>
+  </div>
+  <div class="q-card" id="qcard-3">
+    <div class="q-num">Q · 04</div>
+    <div class="q-text">僕と凜ちゃんがベッド以外の場所で寝落ちしてしまう１番の原因は？</div>
+    <div class="q-boxes" id="qboxes-3"></div>
+  </div>
+  <div class="q-card" id="qcard-4">
+    <div class="q-num">Q · 05</div>
+    <div class="q-text">同棲を始めてから一番うちに遊びに来た回数が多い人物は？</div>
+    <div class="q-boxes" id="qboxes-4"></div>
+  </div>
+  <div class="final-section">
+    <div class="final-top">凜ちゃんの</div>
+    <div class="final-boxes">
+      <div class="final-box" id="fb-0"></div>
+      <div class="final-box" id="fb-1"></div>
+      <div class="final-box" id="fb-2"></div>
+      <div class="final-box" id="fb-3"></div>
+      <div class="final-box" id="fb-4"></div>
+      <div class="final-box" id="fb-5"></div>
     </div>
-    <div class="separator">✦</div>
-    <div class="center-block">
-      <div class="flight-time">7h 20m</div>
-      <div class="flight-time-label">Estimated Flight Time</div>
-      <div class="flight-km">5,316 km</div>
-    </div>
-    <div class="separator">✦</div>
-    <div class="city-block right">
-      <div class="iata">SIN</div>
-      <div class="city-name">Singapore</div>
-      <div class="airport-jp">チャンギ国際空港</div>
-    </div>
+    <div class="final-bottom">の中を見て</div>
   </div>
 </div>
 
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
-const W = 1920, H = 1080;
+
+let W, H, DPR, S;
+let STARS = [];
+let MBS_DATA = null;
+
+function initDimensions() {
+  DPR = Math.min(window.devicePixelRatio || 1, 3);
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width  = Math.round(W * DPR);
+  canvas.height = Math.round(H * DPR);
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+  S = W / 390; // scale factor: 1 = iPhone base width
+  generateStars();
+  MBS_DATA = null; // recompute on resize
+}
+
+function generateStars() {
+  const count = Math.round(120 + 80 * S);
+  STARS = Array.from({length: count}, () => ({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    r: Math.random() * 1.2 + 0.2,
+    a: Math.random() * 0.25 + 0.05
+  }));
+}
+
+initDimensions();
+window.addEventListener('resize', initDimensions);
 
 /* ============================================================
-   MAP PROJECTION
-   Viewport: lon 80–152°E, lat -10–50°N
+   MAP PROJECTION — portrait-optimised viewport
+   lon: 94–148°E, lat: -12–52°N
 ============================================================ */
-const V = { lon0:80, lon1:152, lat0:-10, lat1:50 };
+const V = { lon0:94, lon1:148, lat0:-12, lat1:52 };
 
 function geo(lon, lat) {
-  // Simple equirectangular with slight mercator correction
   const xN = (lon - V.lon0) / (V.lon1 - V.lon0);
-  const latR = lat * Math.PI / 180;
+  const latR  = lat  * Math.PI / 180;
   const lat0R = V.lat0 * Math.PI / 180;
   const lat1R = V.lat1 * Math.PI / 180;
-  const yN = 1 - (Math.log(Math.tan(Math.PI/4 + latR/2)) - Math.log(Math.tan(Math.PI/4 + lat0R/2)))
-               / (Math.log(Math.tan(Math.PI/4 + lat1R/2)) - Math.log(Math.tan(Math.PI/4 + lat0R/2)));
+  const yN = 1 - (
+    Math.log(Math.tan(Math.PI/4 + latR/2))  - Math.log(Math.tan(Math.PI/4 + lat0R/2))
+  ) / (
+    Math.log(Math.tan(Math.PI/4 + lat1R/2)) - Math.log(Math.tan(Math.PI/4 + lat0R/2))
+  );
   return [xN * W, yN * H];
 }
 
 /* ============================================================
-   LAND MASSES (simplified but recognizable)
+   LAND MASSES
 ============================================================ */
 const LANDS = [
-
-  // ---- CHINA (Eastern coast + interior) ----
   { id:'china', d:[
     [108,18],[109,19],[110,20],[110.5,21.5],[111.5,21.8],
     [112.5,22.3],[113.8,22.7],[114.3,22.5],[115,22.8],
@@ -196,7 +309,6 @@ const LANDS = [
     [127,38],[128.5,38.5],[128,38],[126.5,37.5],
     [126,37.5],[125.5,36.5],[126,35],[126.5,34.5],
     [127.5,35],[128.5,35],[129.5,36],[130,37],
-    // back along China coast south
     [128,38],[127.5,38],[127,37],[126.5,37],
     [126,37.5],[125,38],[124,39],[123,40],
     [121,40.5],[120.5,39.5],[119,38.5],[118,37.5],
@@ -206,8 +318,6 @@ const LANDS = [
     [114.5,23],[113.5,22],[112,22],[111,22],
     [110,20.5],[109,20],[108,18]
   ]},
-
-  // ---- INDOCHINA / MALAY PENINSULA ----
   { id:'indochina', d:[
     [108,18],[107,17.5],[107,16.5],[108,15],[108.5,14],
     [109,13.5],[109.5,13],[109.5,11],[109,10],[108.5,9],
@@ -229,8 +339,6 @@ const LANDS = [
     [103,5],[102.5,3.5],[102,3],[102,2],
     [103,2],[103.8,1.35]
   ]},
-
-  // ---- HONSHU (main Japan island) ----
   { id:'honshu', d:[
     [130,31.4],[130.5,32],[131,33],[131.5,33.5],[132,33.7],
     [132.5,33.5],[133,33.8],[133.5,33.9],[134,34.2],
@@ -246,64 +354,46 @@ const LANDS = [
     [132.3,34.2],[131.8,33.8],[131.5,33.4],
     [130.5,33.4],[130,32],[130,31.4]
   ]},
-
-  // ---- HOKKAIDO ----
   { id:'hokkaido', d:[
     [141,41.8],[141.5,42.5],[142,43],[143,43.5],
     [143.5,44.2],[144.5,44.5],[145.5,44.3],[145.5,43.5],
     [144,42.8],[143,43.2],[142.5,44.5],[141.5,45.5],
     [141,45.3],[141.5,44],[140.5,43],[140,42.5],[141,41.8]
   ]},
-
-  // ---- KYUSHU ----
   { id:'kyushu', d:[
     [130,31.4],[130.5,32],[131,32.3],[131.5,32.5],
     [131.8,32],[131.5,31.5],[131,31],[130.5,31],[130,31.4]
   ]},
-
-  // ---- SHIKOKU ----
   { id:'shikoku', d:[
     [132,33.5],[132.5,33.4],[133,33.6],[133.5,33.9],
     [134,34.2],[134.5,33.8],[134,33.4],[133,33],[132,33.5]
   ]},
-
-  // ---- KOREAN PENINSULA ----
   { id:'korea', d:[
     [126,34.1],[127,34.5],[128,34.6],[129,35],
     [129.5,35.5],[129.5,36.5],[129.3,37.5],[129,38.5],
     [128.5,38.8],[128,38.5],[127,38],[126.5,37.5],
     [126,37],[126.5,36],[126.5,35.5],[126,34.1]
   ]},
-
-  // ---- TAIWAN ----
   { id:'taiwan', d:[
     [120,22],[120.5,22.5],[121,23.2],[121.5,23.5],
     [121.8,24.2],[121.5,25],[121.2,25.3],[120.8,25],
     [120.3,24.5],[120,23.5],[120,22]
   ]},
-
-  // ---- LUZON (Philippines) ----
   { id:'luzon', d:[
     [119.5,13.5],[120,14],[120.5,14.5],[121,15],
     [122,16.2],[122.5,17],[122,18],[121,18.7],
     [120.5,19.2],[119.5,18],[119,17],[118.5,16.5],
     [119,15.5],[119.5,14.5],[119.5,13.5]
   ]},
-
-  // ---- MINDANAO (Philippines) ----
   { id:'mindanao', d:[
     [124.2,7.5],[125,8.5],[126,8.5],[126.5,9.5],
     [126,10.5],[125,9.8],[124,9.5],[123.2,8.5],
     [123.5,8],[124.2,7.5]
   ]},
-
-  // ---- VISAYAS (Philippines, simplified) ----
   { id:'visayas', d:[
     [121.5,11],[122.5,11.5],[123.5,11],[124,10.5],
     [123,10],[122,10.5],[121.5,11]
   ]},
-
-  // ---- SUMATRA ----
   { id:'sumatra', d:[
     [95.5,5.5],[96.5,5.3],[97.5,4.8],[98.5,4.2],
     [99.5,3.5],[100.5,2.5],[101.5,1.5],[102.5,1],
@@ -312,16 +402,12 @@ const LANDS = [
     [102.5,4],[101.5,3.5],[100.5,3.8],[99.5,4],
     [98.5,4.8],[97.5,5.2],[96.5,5.5],[95.5,5.5]
   ]},
-
-  // ---- JAVA ----
   { id:'java', d:[
     [106,-6.2],[107,-6.5],[108,-7],[109,-7.5],
     [110,-7.8],[111,-8],[112,-8.2],[113,-8.5],
     [114,-8.2],[115,-8.5],[114.5,-9],[113,-8.8],
     [111,-8.5],[109,-8.2],[107.5,-7.8],[106.5,-6.8],[106,-6.2]
   ]},
-
-  // ---- BORNEO / KALIMANTAN ----
   { id:'borneo', d:[
     [108.5,2],[109.5,2.5],[110,3],[111,4],[112,4.5],
     [113,5.2],[114,5.5],[115.5,5.5],[116.5,6.2],
@@ -333,35 +419,36 @@ const LANDS = [
     [114.5,3.5],[113.5,4],[112.5,4],[111.5,3.5],
     [110.5,3],[109.5,2.5],[108.5,2]
   ]},
-
-  // ---- SULAWESI (simplified to key peninsula) ----
   { id:'sulawesi', d:[
     [122.5,0.5],[123.5,1],[124.5,1.5],[125,1],
     [124.5,0],[124,-1],[123,-1.5],[122.5,-2],
     [122,-1],[121.5,0],[122.5,0.5]
   ]},
-
 ];
 
 /* ============================================================
-   KEY POSITIONS
+   KEY POSITIONS (recalculated each frame against current W,H)
 ============================================================ */
-const TOKYO = geo(139.7, 35.7);
-const SIN   = geo(103.8, 1.35);
-const CP    = geo(127.5, 20);   // Bezier control point (Philippine Sea arc)
+function getPos() {
+  return {
+    TOKYO: geo(139.7, 35.7),
+    SIN:   geo(103.8, 1.35),
+    CP:    geo(127.5, 20)   // Bezier control — Philippine Sea arc
+  };
+}
 
 /* ============================================================
-   BEZIER HELPERS
+   BEZIER
 ============================================================ */
-function bezier(t) {
-  const [x0,y0]=TOKYO, [x1,y1]=CP, [x2,y2]=SIN;
+function bezier(t, P) {
+  const [x0,y0]=P.TOKYO, [x1,y1]=P.CP, [x2,y2]=P.SIN;
   return [
     (1-t)*(1-t)*x0 + 2*(1-t)*t*x1 + t*t*x2,
     (1-t)*(1-t)*y0 + 2*(1-t)*t*y1 + t*t*y2
   ];
 }
-function bezierAngle(t) {
-  const [x0,y0]=TOKYO, [x1,y1]=CP, [x2,y2]=SIN;
+function bezierAngle(t, P) {
+  const [x0,y0]=P.TOKYO, [x1,y1]=P.CP, [x2,y2]=P.SIN;
   const dx = 2*(1-t)*(x1-x0) + 2*t*(x2-x1);
   const dy = 2*(1-t)*(y1-y0) + 2*t*(y2-y1);
   return Math.atan2(dy, dx);
@@ -370,36 +457,28 @@ function bezierAngle(t) {
 /* ============================================================
    DRAW HELPERS
 ============================================================ */
-function polygon(coords, fill, stroke, sw=1.5) {
-  if (!coords || coords.length<2) return;
+function polygon(coords, fill, stroke, sw) {
+  if (!coords || coords.length < 2) return;
   ctx.beginPath();
   const [sx,sy] = geo(coords[0][0], coords[0][1]);
-  ctx.moveTo(sx,sy);
-  for (let i=1;i<coords.length;i++){
+  ctx.moveTo(sx, sy);
+  for (let i=1; i<coords.length; i++) {
     const [x,y] = geo(coords[i][0], coords[i][1]);
-    ctx.lineTo(x,y);
+    ctx.lineTo(x, y);
   }
   ctx.closePath();
-  if (fill){ ctx.fillStyle=fill; ctx.fill(); }
-  if (stroke){ ctx.strokeStyle=stroke; ctx.lineWidth=sw; ctx.stroke(); }
+  if (fill)   { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = sw; ctx.stroke(); }
 }
 
 function drawBackground() {
-  // Deep space
-  const bg = ctx.createRadialGradient(W*0.6, H*0.38, 0, W*0.6, H*0.38, W*0.9);
+  const bg = ctx.createRadialGradient(W*0.55, H*0.38, 0, W*0.55, H*0.38, Math.max(W,H));
   bg.addColorStop(0, '#041830');
   bg.addColorStop(0.45, '#020e1e');
   bg.addColorStop(1, '#010610');
   ctx.fillStyle = bg;
-  ctx.fillRect(0,0,W,H);
+  ctx.fillRect(0, 0, W, H);
 }
-
-/* Pre-generate stars */
-const STARS = Array.from({length:250}, () => ({
-  x: Math.random()*W, y: Math.random()*H,
-  r: Math.random()*1.4 + 0.2,
-  a: Math.random()*0.25 + 0.05
-}));
 
 function drawStars() {
   STARS.forEach(s => {
@@ -413,38 +492,27 @@ function drawStars() {
 function drawGrid(alpha) {
   ctx.save();
   ctx.globalAlpha = alpha * 0.7;
-
-  // Latitude lines
   for (let lat=-10; lat<=50; lat+=10) {
     const [,y] = geo(V.lon0, lat);
-    ctx.beginPath();
-    ctx.moveTo(0, y); ctx.lineTo(W, y);
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y);
     ctx.strokeStyle = 'rgba(40,100,180,0.2)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    ctx.lineWidth = 0.5*S; ctx.stroke();
   }
-  // Longitude lines
-  for (let lon=80; lon<=150; lon+=10) {
+  for (let lon=100; lon<=145; lon+=10) {
     const [x] = geo(lon, 0);
-    ctx.beginPath();
-    ctx.moveTo(x, 0); ctx.lineTo(x, H);
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H);
     ctx.strokeStyle = 'rgba(40,100,180,0.2)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    ctx.lineWidth = 0.5*S; ctx.stroke();
   }
-
-  // Lat/lon labels
-  ctx.font = '500 13px Barlow Condensed';
+  ctx.font = `500 ${Math.round(10*S)}px Barlow Condensed`;
   ctx.fillStyle = 'rgba(80,140,210,0.3)';
-  for (let lon=90; lon<=150; lon+=10) {
-    const [x,y] = geo(lon, V.lat0+1);
-    ctx.textAlign = 'center';
-    ctx.fillText(lon+'°E', x, y);
+  for (let lon=100; lon<=145; lon+=10) {
+    const [x,y] = geo(lon, V.lat0+2);
+    ctx.textAlign='center'; ctx.fillText(lon+'°E', x, y);
   }
   for (let lat=0; lat<=40; lat+=10) {
-    const [x,y] = geo(V.lon0+1.5, lat);
-    ctx.textAlign = 'left';
-    ctx.fillText(lat+'°N', x, y);
+    const [x,y] = geo(V.lon0+2, lat);
+    ctx.textAlign='left'; ctx.fillText(lat+'°N', x, y);
   }
   ctx.restore();
 }
@@ -452,234 +520,144 @@ function drawGrid(alpha) {
 function drawLands(alpha) {
   ctx.save();
   ctx.globalAlpha = alpha;
-
-  // Ocean glow under land masses
-  const oceanGlow = ctx.createRadialGradient(W*0.55, H*0.4, 0, W*0.55, H*0.4, W*0.55);
-  oceanGlow.addColorStop(0, 'rgba(5,35,80,0.3)');
-  oceanGlow.addColorStop(1, 'rgba(5,35,80,0)');
-  ctx.fillStyle = oceanGlow;
-  ctx.fillRect(0,0,W,H);
-
-  const fill   = '#0b1f36';
-  const stroke = '#1e4060';
-
-  LANDS.forEach(L => polygon(L.d, fill, stroke, 1.2));
-
+  LANDS.forEach(L => polygon(L.d, '#0b1f36', '#1e4060', 0.8*S));
   ctx.restore();
 }
 
 function drawCityPulse(x, y, t) {
-  // Expanding ring
-  const r = 16 + (t % 1) * 40;
-  const a = 1 - (t % 1);
-  const grd = ctx.createRadialGradient(x,y, r*0.5, x, y, r);
+  const r = (10 + (t%1)*28)*S;
+  const a = 1 - (t%1);
+  const grd = ctx.createRadialGradient(x,y,r*0.5,x,y,r);
   grd.addColorStop(0, `rgba(200,169,110,${a*0.5})`);
-  grd.addColorStop(1, `rgba(200,169,110,0)`);
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI*2);
-  ctx.fillStyle = grd;
-  ctx.fill();
+  grd.addColorStop(1, 'rgba(200,169,110,0)');
+  ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle=grd; ctx.fill();
 }
 
 function drawCityMarker(x, y, label, code, side, alpha, t) {
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  // Halo
-  const halo = ctx.createRadialGradient(x,y,0,x,y,45);
+  const hr = 32*S;
+  const halo = ctx.createRadialGradient(x,y,0,x,y,hr);
   halo.addColorStop(0,'rgba(200,169,110,0.35)');
   halo.addColorStop(0.6,'rgba(200,169,110,0.08)');
   halo.addColorStop(1,'rgba(200,169,110,0)');
-  ctx.fillStyle = halo;
-  ctx.beginPath(); ctx.arc(x,y,45,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(x,y,hr,0,Math.PI*2); ctx.fill();
 
-  // Pulse rings
-  drawCityPulse(x, y, t * 0.5);
-  drawCityPulse(x, y, (t * 0.5 + 0.5));
+  drawCityPulse(x, y, t*0.5);
+  drawCityPulse(x, y, t*0.5+0.5);
 
-  // Outer ring
-  ctx.beginPath(); ctx.arc(x,y,10,0,Math.PI*2);
-  ctx.strokeStyle='rgba(200,169,110,0.6)'; ctx.lineWidth=1.5; ctx.stroke();
-
-  // Core dot
-  ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2);
+  ctx.beginPath(); ctx.arc(x,y,7*S,0,Math.PI*2);
+  ctx.strokeStyle='rgba(200,169,110,0.6)'; ctx.lineWidth=1.2*S; ctx.stroke();
+  ctx.beginPath(); ctx.arc(x,y,3.5*S,0,Math.PI*2);
   ctx.fillStyle='#c8a96e'; ctx.fill();
-  ctx.beginPath(); ctx.arc(x,y,2.5,0,Math.PI*2);
+  ctx.beginPath(); ctx.arc(x,y,1.8*S,0,Math.PI*2);
   ctx.fillStyle='#fff'; ctx.fill();
 
-  // Label line
-  const lx = side==='left' ? x-22 : x+22;
-  const align = side==='left' ? 'right' : 'left';
-  ctx.textAlign = align;
-
-  ctx.font = '700 36px Barlow Condensed';
+  const lx = side==='left' ? x-14*S : x+14*S;
+  ctx.textAlign = side==='left' ? 'right' : 'left';
+  ctx.font = `700 ${Math.round(24*S)}px Barlow Condensed`;
   ctx.fillStyle='#fff';
-  ctx.letterSpacing='3px';
-  ctx.fillText(code, lx, y-6);
-
-  ctx.font = '300 17px Barlow';
+  ctx.fillText(code, lx, y-3*S);
+  ctx.font = `300 ${Math.round(12*S)}px Barlow`;
   ctx.fillStyle='rgba(200,169,110,0.85)';
-  ctx.fillText(label, lx, y+16);
+  ctx.fillText(label, lx, y+13*S);
 
   ctx.restore();
 }
 
-function drawPath(progress, alpha) {
+function drawPath(progress, alpha, P) {
   if (alpha<=0 || progress<=0) return;
-  ctx.save();
-  ctx.globalAlpha = alpha;
-
-  const N = 80;
-  const drawCount = Math.floor(progress * N);
-
-  // Draw dashes
+  ctx.save(); ctx.globalAlpha=alpha;
+  const N=60, drawCount=Math.floor(progress*N);
   for (let i=0; i<drawCount; i++) {
-    const t0 = i/N;
-    const t1 = Math.min((i+0.55)/N, progress);
-    if (t1 <= t0) continue;
-    const [x0,y0] = bezier(t0);
-    const [x1,y1] = bezier(t1);
-    ctx.beginPath();
-    ctx.moveTo(x0,y0); ctx.lineTo(x1,y1);
-    ctx.strokeStyle = `rgba(200,169,110,${0.4 + 0.2*(i/drawCount)})`;
-    ctx.lineWidth = 2.2;
-    ctx.stroke();
+    const t0=i/N, t1=Math.min((i+0.55)/N, progress);
+    if (t1<=t0) continue;
+    const [x0,y0]=bezier(t0,P), [x1,y1]=bezier(t1,P);
+    ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1);
+    ctx.strokeStyle=`rgba(200,169,110,${0.35+0.2*(i/drawCount)})`;
+    ctx.lineWidth=1.8*S; ctx.stroke();
   }
-
-  // Glow fade near current position
-  const fadeLen = 0.15;
-  const fadeStart = Math.max(0, progress - fadeLen);
-  for (let j=0; j<24; j++) {
-    const ft = fadeStart + (progress-fadeStart)*(j/24);
-    const [fx,fy] = bezier(ft);
-    const fa = (j/24)*0.5;
-    ctx.beginPath();
-    ctx.arc(fx,fy, 3.5, 0, Math.PI*2);
-    ctx.fillStyle=`rgba(255,215,100,${fa})`;
-    ctx.fill();
+  const fadeStart=Math.max(0,progress-0.15);
+  for (let j=0; j<18; j++) {
+    const ft=fadeStart+(progress-fadeStart)*(j/18);
+    const [fx,fy]=bezier(ft,P);
+    ctx.beginPath(); ctx.arc(fx,fy,2.2*S,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,215,100,${(j/18)*0.5})`; ctx.fill();
   }
-
   ctx.restore();
 }
 
-/* ---- TRAIL ---- */
-const trail = [];
+const trail=[];
 
 function drawTrail() {
   for (let i=0; i<trail.length; i++) {
-    const [tx,ty] = trail[i];
-    const prog = i / trail.length;
-    const r = prog * 5;
-    const a = prog * prog * 0.55;
-    ctx.beginPath();
-    ctx.arc(tx, ty, r, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(255,210,80,${a})`;
-    ctx.fill();
+    const [tx,ty]=trail[i];
+    const prog=i/trail.length;
+    ctx.beginPath(); ctx.arc(tx,ty,prog*3.5*S,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,210,80,${prog*prog*0.55})`; ctx.fill();
   }
 }
 
-/* ---- PLANE ICON ---- */
 function drawPlane(x, y, angle, alpha) {
   ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.translate(x, y);
-  ctx.rotate(angle);
+  ctx.globalAlpha=alpha;
+  ctx.translate(x,y); ctx.rotate(angle); ctx.scale(S,S);
 
-  // Outer glow
-  const g = ctx.createRadialGradient(0,0,0,0,0,38);
+  const g=ctx.createRadialGradient(0,0,0,0,0,28);
   g.addColorStop(0,'rgba(255,245,220,0.5)');
   g.addColorStop(0.4,'rgba(200,220,255,0.15)');
   g.addColorStop(1,'rgba(200,220,255,0)');
-  ctx.fillStyle=g;
-  ctx.beginPath(); ctx.arc(0,0,38,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,28,0,Math.PI*2); ctx.fill();
 
-  // Shadow under
-  ctx.shadowColor='rgba(255,200,80,0.6)';
-  ctx.shadowBlur=18;
+  ctx.shadowColor='rgba(255,200,80,0.6)'; ctx.shadowBlur=14;
   ctx.fillStyle='#fff';
 
-  // Fuselage
-  ctx.beginPath();
-  ctx.ellipse(0,0,22,5.5,0,0,Math.PI*2);
-  ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0,0,18,4.5,0,0,Math.PI*2); ctx.fill();
 
-  // Wings
-  ctx.beginPath();
-  ctx.moveTo(3,0);
-  ctx.lineTo(-7,-22);
-  ctx.lineTo(-13,-16);
-  ctx.lineTo(6,0);
-  ctx.closePath();
-  ctx.fill();
+  ctx.beginPath(); ctx.moveTo(2,0); ctx.lineTo(-6,-18); ctx.lineTo(-11,-13); ctx.lineTo(5,0);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(2,0); ctx.lineTo(-6,18);  ctx.lineTo(-11,13);  ctx.lineTo(5,0);
+  ctx.closePath(); ctx.fill();
 
-  ctx.beginPath();
-  ctx.moveTo(3,0);
-  ctx.lineTo(-7,22);
-  ctx.lineTo(-13,16);
-  ctx.lineTo(6,0);
-  ctx.closePath();
-  ctx.fill();
-
-  // Nose
-  ctx.beginPath();
-  ctx.moveTo(18,0); ctx.lineTo(25,-2); ctx.lineTo(25,2); ctx.closePath();
-  ctx.fill();
-
-  // Tail fins
-  ctx.beginPath();
-  ctx.moveTo(-19,0);ctx.lineTo(-25,-9);ctx.lineTo(-16,-4);ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(-19,0);ctx.lineTo(-25,9);ctx.lineTo(-16,4);ctx.closePath();
-  ctx.fill();
+  ctx.beginPath(); ctx.moveTo(15,0); ctx.lineTo(21,-1.5); ctx.lineTo(21,1.5); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-16,0); ctx.lineTo(-21,-7); ctx.lineTo(-13,-3); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-16,0); ctx.lineTo(-21,7);  ctx.lineTo(-13,3);  ctx.closePath(); ctx.fill();
 
   ctx.shadowBlur=0;
   ctx.restore();
 }
 
-/* ---- PROGRESS BAR ---- */
 function drawProgressBar(t, alpha) {
   if (alpha<=0||t<=0) return;
-  ctx.save();
-  ctx.globalAlpha = alpha;
+  ctx.save(); ctx.globalAlpha=alpha;
 
-  const bx = W*0.28, by = H-52, bw = W*0.44, bh = 2.5;
+  const bw=W*0.62, bh=2*S;
+  const bx=(W-bw)/2, by=H-44*S;
 
-  // Track
   ctx.fillStyle='rgba(255,255,255,0.07)';
-  ctx.beginPath();
-  ctx.roundRect(bx, by, bw, bh, 2);
-  ctx.fill();
+  ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,bh/2); ctx.fill();
 
-  // Fill
-  const fw = bw * Math.min(t,1);
-  if (fw > 0) {
-    const gr = ctx.createLinearGradient(bx,0,bx+fw,0);
+  const fw=bw*Math.min(t,1);
+  if (fw>0) {
+    const gr=ctx.createLinearGradient(bx,0,bx+fw,0);
     gr.addColorStop(0,'rgba(200,169,110,0.5)');
     gr.addColorStop(1,'rgba(255,220,100,1)');
-    ctx.fillStyle = gr;
-    ctx.beginPath();
-    ctx.roundRect(bx, by, fw, bh, 2);
-    ctx.fill();
+    ctx.fillStyle=gr;
+    ctx.beginPath(); ctx.roundRect(bx,by,fw,bh,bh/2); ctx.fill();
   }
-
-  // Leading dot
-  if (t < 1 && fw > 0) {
-    const dotX = bx + fw;
-    const dg = ctx.createRadialGradient(dotX,by+1,0,dotX,by+1,9);
+  if (t<1&&fw>0) {
+    const dotX=bx+fw;
+    const dg=ctx.createRadialGradient(dotX,by+bh/2,0,dotX,by+bh/2,7*S);
     dg.addColorStop(0,'rgba(255,225,100,0.9)');
     dg.addColorStop(1,'rgba(255,225,100,0)');
-    ctx.fillStyle=dg;
-    ctx.beginPath();
-    ctx.arc(dotX, by+1, 9, 0, Math.PI*2);
-    ctx.fill();
+    ctx.fillStyle=dg; ctx.beginPath(); ctx.arc(dotX,by+bh/2,7*S,0,Math.PI*2); ctx.fill();
   }
-
-  // Percentage text
-  ctx.font='400 13px Barlow Condensed';
+  ctx.font=`400 ${Math.round(10*S)}px Barlow Condensed`;
   ctx.fillStyle='rgba(200,169,110,0.6)';
   ctx.textAlign='center';
-  ctx.fillText(Math.round(t*100)+'%', bx+bw*0.5, by-10);
+  ctx.fillText(Math.round(t*100)+'%', bx+bw/2, by-7*S);
 
   ctx.restore();
 }
@@ -687,72 +665,460 @@ function drawProgressBar(t, alpha) {
 /* ============================================================
    EASING
 ============================================================ */
-function easeOutCubic(t) { return 1 - Math.pow(1-t,3); }
-function easeInOutCubic(t) {
-  return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+function easeOutCubic(t)    { return 1 - Math.pow(1-t,3); }
+function easeInOutCubic(t)  { return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+
+/* ============================================================
+   SCENE 3 — DATA
+============================================================ */
+const ANSWERS = [
+  'にこらいばーぐまん', // Q1 (9)
+  'ぺきんだっくまにあ', // Q2 (9)
+  'ぴのぽむ',           // Q3 (4)
+  'ゆかだんぼう',       // Q4 (6)
+  'ないとうけいすけ',   // Q5 (8)
+];
+// [qIdx, charIdx(0-based), finalBoxIdx(0-based)]
+const KEY_MAP = [
+  [0, 4, 0], [0, 6, 2],
+  [1, 4, 1],
+  [2, 1, 3],
+  [3, 1, 5],
+  [4, 0, 4],
+];
+const solved = [false,false,false,false,false];
+
+/* ============================================================
+   MARINA BAY BACKGROUND
+============================================================ */
+function initMBSData() {
+  if (MBS_DATA) return;
+  const hY = H * 0.58;
+
+  function seededRng(seed) {
+    let s = seed | 0;
+    return function() {
+      s = Math.imul(s ^ (s >>> 16), 0x45d9f3b) | 0;
+      s = Math.imul(s ^ (s >>> 16), 0x45d9f3b) | 0;
+      return ((s ^ (s >>> 16)) >>> 0) / 4294967296;
+    };
+  }
+
+  const defs = [
+    {xp:0.020,wp:0.048,h:62*S,lit:0.45,wr:0.7},
+    {xp:0.074,wp:0.038,h:88*S,lit:0.40,wr:0.6},
+    {xp:0.116,wp:0.055,h:118*S,lit:0.38,wr:0.65},
+    {xp:0.178,wp:0.038,h:78*S,lit:0.30,wr:0.5},
+    {xp:0.222,wp:0.065,h:138*S,lit:0.50,wr:0.7},
+    {xp:0.296,wp:0.048,h:100*S,lit:0.35,wr:0.6},
+    {xp:0.630,wp:0.055,h:108*S,lit:0.42,wr:0.65},
+    {xp:0.694,wp:0.045,h:82*S, lit:0.35,wr:0.55},
+    {xp:0.750,wp:0.072,h:128*S,lit:0.48,wr:0.7},
+    {xp:0.836,wp:0.048,h:92*S, lit:0.30,wr:0.5},
+    {xp:0.896,wp:0.065,h:68*S, lit:0.28,wr:0.45},
+  ];
+
+  const buildings = defs.map((d, bi) => {
+    const rng = seededRng(bi * 7919 + 42);
+    const bx = d.xp * W, bw = d.wp * W;
+    const cols = Math.max(2, Math.floor(bw / (5.5*S)));
+    const rows = Math.max(3, Math.floor(d.h  / (8*S)));
+    const windows = [];
+    for (let row=0; row<rows; row++) for (let col=0; col<cols; col++) {
+      if (rng() < d.lit) {
+        const br = 0.45 + rng()*0.45;
+        const w2 = d.wr + (rng()-0.5)*0.2;
+        windows.push({
+          x: bx + (col+0.15)/cols*bw,
+          y: hY - d.h + (row+0.2)/rows*d.h,
+          w: bw/cols*0.62, h: d.h/rows*0.55,
+          r: Math.round(210+w2*40), g: Math.round(155+w2*40),
+          b: Math.round(80+(1-w2)*110), br
+        });
+      }
+    }
+    return {bx, bw, h:d.h, windows};
+  });
+
+  // MBS
+  const mbsX = W*0.415, tW=18*S, tG=7*S;
+  const mbs = {
+    towers:[
+      {x:mbsX,          w:tW, h:148*S},
+      {x:mbsX+tW+tG,    w:tW, h:156*S},
+      {x:mbsX+2*(tW+tG),w:tW, h:150*S},
+    ],
+    bL: mbsX - 10*S,
+    bR: mbsX + 3*tW + 2*tG + 10*S,
+    bTopY: hY - 170*S,
+    bMidY: hY - 158*S,
+    bBotY: hY - 148*S,
+  };
+
+  // MBS windows (seeded)
+  const mbsRng = seededRng(9999);
+  mbs.towers.forEach(t => {
+    t.windows = [];
+    const cols=3, rows=Math.floor(t.h/(9*S));
+    for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
+      if (mbsRng() < 0.35) t.windows.push({
+        x: t.x+(c+0.15)/cols*t.w, y: hY-t.h+(r+0.2)/rows*t.h,
+        w: t.w/cols*0.6, h: t.h/rows*0.5,
+        br: 0.3+mbsRng()*0.35
+      });
+    }
+  });
+
+  MBS_DATA = {buildings, mbs, hY};
+}
+
+function drawMBSBackground(t) {
+  initMBSData();
+  const {buildings, mbs, hY} = MBS_DATA;
+
+  // Sky
+  const sky = ctx.createLinearGradient(0,0,0,hY);
+  sky.addColorStop(0,   '#01080f');
+  sky.addColorStop(0.6, '#030f1e');
+  sky.addColorStop(1,   '#0b2035');
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,hY);
+
+  // Stars (twinkle)
+  STARS.forEach(s => {
+    const tw = 0.7 + 0.3*Math.sin(t*0.0008*(s.r+0.5));
+    if (s.y > hY-2) return;
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r*0.8,0,Math.PI*2);
+    ctx.fillStyle=`rgba(200,220,255,${s.a*tw})`; ctx.fill();
+  });
+
+  // City glow
+  const hg = ctx.createRadialGradient(W*0.5,hY,0,W*0.5,hY,W*0.9);
+  hg.addColorStop(0,'rgba(160,100,30,0.35)');
+  hg.addColorStop(0.3,'rgba(120,75,20,0.15)');
+  hg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=hg; ctx.fillRect(0,0,W,hY);
+
+  // Water
+  const wat = ctx.createLinearGradient(0,hY,0,H);
+  wat.addColorStop(0,'#071828'); wat.addColorStop(1,'#020a14');
+  ctx.fillStyle=wat; ctx.fillRect(0,hY,W,H-hY);
+
+  // Water reflections (shimmer)
+  const sx=Math.sin(t*0.0012)*2*S, sy=Math.abs(Math.sin(t*0.0008))*3*S;
+  [...buildings, {bx:W*0.415,bw:(3*18+2*7)*S+20*S,h:80*S,
+    _r:180,_g:130,_b:60}].forEach((b,i) => {
+    const cx2 = (b.bx||0)+(b.bw||0)*0.5+sx;
+    const rg = ctx.createLinearGradient(cx2,hY,cx2,hY+b.h*0.5+sy);
+    const rr=b._r||180, rg2=b._g||130, rb=b._b||60;
+    rg.addColorStop(0,`rgba(${rr},${rg2},${rb},0.14)`);
+    rg.addColorStop(1,`rgba(${rr},${rg2},${rb},0)`);
+    ctx.fillStyle=rg;
+    ctx.fillRect(cx2-(b.bw||40*S)*0.4,hY,(b.bw||40*S)*0.8,b.h*0.5+sy);
+  });
+  // MBS pool reflection
+  const mbsCX = mbs.bL+(mbs.bR-mbs.bL)*0.5+sx;
+  const poolRg = ctx.createLinearGradient(mbsCX,hY,mbsCX,hY+70*S+sy);
+  poolRg.addColorStop(0,'rgba(80,160,240,0.22)'); poolRg.addColorStop(1,'rgba(80,160,240,0)');
+  ctx.fillStyle=poolRg; ctx.fillRect(mbsCX-30*S,hY,60*S,70*S+sy);
+
+  // Building silhouettes
+  buildings.forEach(b => {
+    ctx.fillStyle='#050f1c';
+    ctx.fillRect(b.bx,hY-b.h,b.bw,b.h);
+  });
+
+  // MBS towers
+  mbs.towers.forEach(t => {
+    ctx.fillStyle='#050f1c'; ctx.fillRect(t.x,hY-t.h,t.w,t.h);
+    const eg = ctx.createLinearGradient(t.x,0,t.x+t.w,0);
+    eg.addColorStop(0,'rgba(40,80,130,0.28)'); eg.addColorStop(1,'rgba(10,30,60,0.05)');
+    ctx.fillStyle=eg; ctx.fillRect(t.x,hY-t.h,t.w,t.h);
+  });
+
+  // MBS SkyPark boat
+  ctx.beginPath();
+  ctx.moveTo(mbs.bL,mbs.bBotY);
+  ctx.lineTo(mbs.bL,mbs.bMidY);
+  ctx.quadraticCurveTo((mbs.bL+mbs.bR)*0.5,mbs.bTopY,mbs.bR,mbs.bMidY);
+  ctx.lineTo(mbs.bR,mbs.bBotY);
+  ctx.closePath();
+  ctx.fillStyle='#050f1c'; ctx.fill();
+  // Pool glow
+  const pg = ctx.createLinearGradient(0,mbs.bTopY,0,mbs.bMidY);
+  pg.addColorStop(0,'rgba(80,160,240,0.18)'); pg.addColorStop(1,'rgba(80,160,240,0)');
+  ctx.fillStyle=pg;
+  ctx.beginPath();
+  ctx.moveTo(mbs.bL,mbs.bBotY); ctx.lineTo(mbs.bL,mbs.bMidY);
+  ctx.quadraticCurveTo((mbs.bL+mbs.bR)*0.5,mbs.bTopY,mbs.bR,mbs.bMidY);
+  ctx.lineTo(mbs.bR,mbs.bBotY); ctx.closePath(); ctx.fill();
+
+  // Window lights
+  buildings.forEach(b => b.windows.forEach(w => {
+    ctx.fillStyle=`rgba(${w.r},${w.g},${w.b},${w.br})`;
+    ctx.fillRect(w.x,w.y,w.w,w.h);
+  }));
+  mbs.towers.forEach(t => t.windows.forEach(w => {
+    ctx.fillStyle=`rgba(210,168,80,${w.br})`;
+    ctx.fillRect(w.x,w.y,w.w,w.h);
+  }));
+
+  // Vignette
+  const vig = ctx.createRadialGradient(W*0.5,H*0.45,H*0.1,W*0.5,H*0.45,H*0.85);
+  vig.addColorStop(0,'rgba(0,0,0,0)');
+  vig.addColorStop(0.65,'rgba(1,6,15,0.1)');
+  vig.addColorStop(1,'rgba(1,6,15,0.6)');
+  ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
 }
 
 /* ============================================================
-   ANIMATION LOOP
+   QUIZ LOGIC
 ============================================================ */
-const TOTAL = 16000; // 16s loop
-let start = null;
+let scene3Initialized = false;
 
-function render(ts) {
-  if (!start) start = ts;
-  const e = (ts - start) % TOTAL; // loop
-  const t = e / TOTAL;
+function initScene3() {
+  if (scene3Initialized) return;
+  scene3Initialized = true;
 
-  // Phases (ms into cycle):
-  //  0–1800:  bg + grid fade in
-  //  1800–3200: land fade in
-  //  3200–4400: cities appear
-  //  4400–7500: path draws
-  //  7500–14500: plane flies
-  //  14500–16000: fade out / restart
+  ANSWERS.forEach((answer, qIdx) => {
+    const container = document.getElementById(`qboxes-${qIdx}`);
+    const chars = [...answer];
+    const keyPos = KEY_MAP
+      .filter(k => k[0]===qIdx)
+      .reduce((m,[,ci,fi]) => { m[ci]=fi+1; return m; }, {});
 
-  const fadeOut = e > 14500 ? 1 - (e-14500)/1500 : 1;
+    chars.forEach((_, ci) => {
+      const box = document.createElement('div');
+      box.className = 'q-box' + (keyPos[ci] ? ' key-box' : '');
+      if (keyPos[ci]) {
+        const num = document.createElement('span');
+        num.className = 'key-num';
+        num.textContent = keyPos[ci];
+        box.appendChild(num);
+      }
+      const inp = document.createElement('input');
+      inp.type='text'; inp.maxLength=2;
+      inp.autocomplete='off'; inp.autocorrect='off';
+      inp.autocapitalize='none'; inp.spellcheck=false;
+      inp.setAttribute('inputmode','text');
 
-  const mapAlpha   = Math.min(1, e/1800) * fadeOut;
-  const landAlpha  = Math.min(1, Math.max(0,(e-1800)/1400)) * fadeOut;
-  const cityAlpha  = Math.min(1, Math.max(0,(e-3200)/1200)) * fadeOut;
-  const pathProg   = easeOutCubic(Math.min(1, Math.max(0,(e-4400)/3100)));
-  const planeT     = e > 7500 ? easeInOutCubic(Math.min(1,(e-7500)/7000)) : 0;
-  const planeAlpha = Math.min(1, Math.max(0,(e-7500)/600)) * fadeOut;
-  const barAlpha   = Math.min(1, Math.max(0,(e-7800)/800)) * fadeOut;
+      inp.addEventListener('keydown', e => {
+        if (e.key==='Backspace' && inp.value==='') {
+          e.preventDefault();
+          const prev = getBoxInput(qIdx, ci-1);
+          if (prev) { prev.focus(); prev.value=''; }
+        }
+      });
+      inp.addEventListener('input', () => {
+        const v = [...inp.value];
+        if (!v.length) return;
+        inp.value = v[v.length-1]; // last char (handles IME)
+        if (ci === chars.length-1) checkAnswer(qIdx);
+        else getBoxInput(qIdx, ci+1)?.focus();
+      });
 
-  // Manage trail
-  if (e > 7500 && planeT < 1) {
-    const pos = bezier(planeT);
-    trail.push(pos);
-    if (trail.length > 90) trail.shift();
-  } else if (e <= 7500 || planeT >= 1) {
-    trail.length = 0;
+      box.appendChild(inp);
+      container.appendChild(box);
+    });
+  });
+  setTimeout(() => getBoxInput(0,0)?.focus(), 200);
+}
+
+function getBoxInput(qIdx, ci) {
+  if (ci < 0) return null;
+  return document.querySelector(`#qboxes-${qIdx} .q-box:nth-child(${ci+1}) input`);
+}
+
+function checkAnswer(qIdx) {
+  setTimeout(() => {
+    const len = [...ANSWERS[qIdx]].length;
+    let entered = '';
+    for (let i=0; i<len; i++) entered += getBoxInput(qIdx,i)?.value||'';
+    if (entered.length < len) return;
+    if (entered === ANSWERS[qIdx]) solveQuestion(qIdx);
+    else shakeQuestion(qIdx);
+  }, 60);
+}
+
+function solveQuestion(qIdx) {
+  solved[qIdx] = true;
+  document.getElementById(`qcard-${qIdx}`).classList.add('solved');
+  document.getElementById(`qcard-${qIdx}`).querySelectorAll('input')
+    .forEach(i => i.disabled=true);
+
+  KEY_MAP.filter(k=>k[0]===qIdx).forEach(([,ci,fi]) => {
+    const ch = [...ANSWERS[qIdx]][ci];
+    const fb = document.getElementById(`fb-${fi}`);
+    if (fb) setTimeout(() => { fb.textContent=ch; fb.classList.add('filled'); }, 200);
+  });
+
+  const next = solved.findIndex((s,i) => i>qIdx && !s);
+  if (next>=0) setTimeout(() => getBoxInput(next,0)?.focus(), 350);
+}
+
+function shakeQuestion(qIdx) {
+  const boxes = document.getElementById(`qboxes-${qIdx}`);
+  boxes.classList.remove('shaking');
+  void boxes.offsetWidth;
+  boxes.classList.add('shaking');
+  setTimeout(() => {
+    boxes.classList.remove('shaking');
+    const len = [...ANSWERS[qIdx]].length;
+    for (let i=0;i<len;i++) { const inp=getBoxInput(qIdx,i); if(inp) inp.value=''; }
+    getBoxInput(qIdx,0)?.focus();
+  }, 450);
+}
+
+/* ============================================================
+   SCENE 3 — RENDER
+============================================================ */
+function renderScene3(e) {
+  initScene3();
+  initMBSData();
+  const fadeIn = Math.min(1, e/1200);
+  drawMBSBackground(e);
+  if (fadeIn < 1) {
+    ctx.fillStyle=`rgba(255,255,255,${1-fadeIn})`;
+    ctx.fillRect(0,0,W,H);
+  }
+  const s3 = document.getElementById('scene3');
+  s3.style.opacity = Math.max(0, (fadeIn-0.5)*2);
+  if (fadeIn>0.5 && !s3.classList.contains('active')) s3.classList.add('active');
+}
+
+/* ============================================================
+   SCENE 1 — Flight animation (15 s, plays once)
+============================================================ */
+const SCENE1_DUR = 15000;
+
+function renderScene1(e, ts) {
+  const P = getPos();
+
+  const mapAlpha  = Math.min(1, e/1800);
+  const landAlpha = Math.min(1, Math.max(0,(e-1800)/1400));
+  const cityAlpha = Math.min(1, Math.max(0,(e-3200)/1200));
+  const pathProg  = easeOutCubic(Math.min(1, Math.max(0,(e-4400)/3100)));
+  const planeT    = e>7500 ? easeInOutCubic(Math.min(1,(e-7500)/7000)) : 0;
+  const planeAlpha= Math.min(1, Math.max(0,(e-7500)/600));
+
+  if (e>7500 && planeT<1) {
+    trail.push(bezier(planeT, P));
+    if (trail.length>70) trail.shift();
+  } else if (e<=7500) {
+    trail.length=0;
   }
 
-  // ---- DRAW ----
-  ctx.clearRect(0,0,W,H);
   drawBackground();
   drawStars();
   drawGrid(mapAlpha);
   drawLands(landAlpha);
-  drawPath(pathProg, cityAlpha);
+  drawPath(pathProg, cityAlpha, P);
   drawTrail();
-  drawCityMarker(TOKYO[0],TOKYO[1],'Tokyo / Haneda','HND','left', cityAlpha, ts/1000);
-  drawCityMarker(SIN[0], SIN[1],'Singapore','SIN','right', cityAlpha, ts/1000+0.3);
-
-  if (e > 7500) {
-    const [px,py] = bezier(planeT);
-    const ang = bezierAngle(planeT);
-    drawPlane(px, py, ang, planeAlpha);
+  drawCityMarker(P.TOKYO[0],P.TOKYO[1],'Tokyo','HND','left', cityAlpha, ts/1000);
+  drawCityMarker(P.SIN[0],  P.SIN[1],  'Singapore','SIN','right', cityAlpha, ts/1000+0.3);
+  if (e>7500) {
+    const [px,py]=bezier(planeT,P);
+    drawPlane(px,py,bezierAngle(planeT,P),planeAlpha);
   }
 
-  drawProgressBar(planeT, barAlpha);
+  document.getElementById('hdr').style.opacity = cityAlpha;
+}
 
-  // HTML UI visibility
-  const uiAlpha = cityAlpha;
-  document.getElementById('bar').style.opacity = barAlpha;
+/* ============================================================
+   SCENE 2 — Zoom into Singapore → glow → white out
+   Timeline (ms from scene start):
+     0–600   : brief hold, Scene-1 elements fade out
+     600–6500: zoom in (1× → 100×), Singapore drifts to center
+     4500–7200: warm glow builds
+     6800–9000: white out
+============================================================ */
+function renderScene2(e, ts) {
+  const P   = getPos();
+  const [sx, sy] = P.SIN;
 
+  // Scene-1 残像フェードアウト (600ms)
+  const transAlpha = Math.max(0, 1 - e/1200);
+
+  // ズーム
+  const zoomProg = easeInOutCubic(Math.min(1, Math.max(0, (e-1200)/11200)));
+  const zoom     = 1 + zoomProg * 99; // 1× → 100×
+
+  // シンガポールのスクリーン位置：自然位置 → 画面中央へ
+  const cx = sx + zoomProg * (W/2 - sx);
+  const cy = sy + zoomProg * (H/2 - sy);
+
+  // --- 背景・星（ズーム外）---
+  drawBackground();
+  drawStars();
+
+  // --- ズームイン描画 ---
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(zoom, zoom);
+  ctx.translate(-sx, -sy);
+
+  const gridAlpha = Math.max(0, 1 - zoomProg*3);
+  if (gridAlpha > 0) drawGrid(gridAlpha);
+  drawLands(1);
+
+  ctx.restore();
+
+  // --- Scene-1 残像（ルート・マーカー・ヘッダー）フェードアウト ---
+  if (transAlpha > 0) {
+    drawPath(1, transAlpha, P);
+    drawCityMarker(P.TOKYO[0],P.TOKYO[1],'Tokyo','HND','left', transAlpha, ts/1000);
+    drawCityMarker(P.SIN[0],  P.SIN[1],  'Singapore','SIN','right', transAlpha, ts/1000+0.3);
+    document.getElementById('hdr').style.opacity = transAlpha;
+  } else {
+    document.getElementById('hdr').style.opacity = 0;
+  }
+
+  // --- グロー → ホワイトアウト（一体化）---
+  // 600ms から 2400ms かけて gold → white へ昇華、18.0s に完了
+  const brightProg = easeInOutCubic(Math.min(1, Math.max(0, (e-1200)/3300)));
+  if (brightProg > 0) {
+    // 中心から広がる温かい光（gold → white）
+    const g1 = ctx.createRadialGradient(cx,cy,0, cx,cy, W*(0.15 + brightProg*1.2));
+    g1.addColorStop(0,   `rgba(255,255,255,${Math.min(1, brightProg*1.5)})`);
+    g1.addColorStop(0.3, `rgba(255,220,140,${brightProg*0.85})`);
+    g1.addColorStop(0.7, `rgba(255,200,80,${brightProg*0.4})`);
+    g1.addColorStop(1,   'rgba(255,200,80,0)');
+    ctx.fillStyle=g1; ctx.fillRect(0,0,W,H);
+
+    // 外側の温かいヘイズ
+    const g2 = ctx.createRadialGradient(cx,cy,0, cx,cy, W*2);
+    g2.addColorStop(0, `rgba(255,240,180,${brightProg*0.5})`);
+    g2.addColorStop(1, 'rgba(255,240,180,0)');
+    ctx.fillStyle=g2; ctx.fillRect(0,0,W,H);
+
+    // 最初から段階的に白が広がる（16.2s → 21.0s で完全白）
+    ctx.fillStyle = `rgba(255,255,255,${Math.pow(brightProg, 0.4)})`;
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+/* ============================================================
+   RENDER LOOP
+============================================================ */
+const SCENE2_DUR = 4500; // white-out completes at scene2_e=4500ms
+let start=null;
+
+function render(ts) {
+  if (!start) start=ts;
+  const elapsed = ts - start;
+
+  ctx.save();
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.clearRect(0,0,W,H);
+
+  if (elapsed < SCENE1_DUR) {
+    renderScene1(elapsed, ts);
+  } else if (elapsed < SCENE1_DUR + SCENE2_DUR) {
+    renderScene2(elapsed - SCENE1_DUR, ts);
+  } else {
+    renderScene3(elapsed - SCENE1_DUR - SCENE2_DUR);
+  }
+
+  ctx.restore();
   requestAnimationFrame(render);
 }
 
