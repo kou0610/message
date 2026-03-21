@@ -182,6 +182,7 @@ canvas {
 <body>
 
 <canvas id="c"></canvas>
+<img id="bg-img" src="シンガポール夜景.jpeg" style="display:none" alt="">
 
 <div class="ui">
   <div class="vignette"></div>
@@ -689,185 +690,47 @@ const KEY_MAP = [
 const solved = [false,false,false,false,false];
 
 /* ============================================================
-   MARINA BAY BACKGROUND
+   MARINA BAY BACKGROUND — 実写画像版
 ============================================================ */
-function initMBSData() {
-  if (MBS_DATA) return;
-  const hY = H * 0.58;
-
-  function seededRng(seed) {
-    let s = seed | 0;
-    return function() {
-      s = Math.imul(s ^ (s >>> 16), 0x45d9f3b) | 0;
-      s = Math.imul(s ^ (s >>> 16), 0x45d9f3b) | 0;
-      return ((s ^ (s >>> 16)) >>> 0) / 4294967296;
-    };
-  }
-
-  const defs = [
-    {xp:0.020,wp:0.048,h:62*S,lit:0.45,wr:0.7},
-    {xp:0.074,wp:0.038,h:88*S,lit:0.40,wr:0.6},
-    {xp:0.116,wp:0.055,h:118*S,lit:0.38,wr:0.65},
-    {xp:0.178,wp:0.038,h:78*S,lit:0.30,wr:0.5},
-    {xp:0.222,wp:0.065,h:138*S,lit:0.50,wr:0.7},
-    {xp:0.296,wp:0.048,h:100*S,lit:0.35,wr:0.6},
-    {xp:0.630,wp:0.055,h:108*S,lit:0.42,wr:0.65},
-    {xp:0.694,wp:0.045,h:82*S, lit:0.35,wr:0.55},
-    {xp:0.750,wp:0.072,h:128*S,lit:0.48,wr:0.7},
-    {xp:0.836,wp:0.048,h:92*S, lit:0.30,wr:0.5},
-    {xp:0.896,wp:0.065,h:68*S, lit:0.28,wr:0.45},
-  ];
-
-  const buildings = defs.map((d, bi) => {
-    const rng = seededRng(bi * 7919 + 42);
-    const bx = d.xp * W, bw = d.wp * W;
-    const cols = Math.max(2, Math.floor(bw / (5.5*S)));
-    const rows = Math.max(3, Math.floor(d.h  / (8*S)));
-    const windows = [];
-    for (let row=0; row<rows; row++) for (let col=0; col<cols; col++) {
-      if (rng() < d.lit) {
-        const br = 0.45 + rng()*0.45;
-        const w2 = d.wr + (rng()-0.5)*0.2;
-        windows.push({
-          x: bx + (col+0.15)/cols*bw,
-          y: hY - d.h + (row+0.2)/rows*d.h,
-          w: bw/cols*0.62, h: d.h/rows*0.55,
-          r: Math.round(210+w2*40), g: Math.round(155+w2*40),
-          b: Math.round(80+(1-w2)*110), br
-        });
-      }
-    }
-    return {bx, bw, h:d.h, windows};
-  });
-
-  // MBS
-  const mbsX = W*0.415, tW=18*S, tG=7*S;
-  const mbs = {
-    towers:[
-      {x:mbsX,          w:tW, h:148*S},
-      {x:mbsX+tW+tG,    w:tW, h:156*S},
-      {x:mbsX+2*(tW+tG),w:tW, h:150*S},
-    ],
-    bL: mbsX - 10*S,
-    bR: mbsX + 3*tW + 2*tG + 10*S,
-    bTopY: hY - 170*S,
-    bMidY: hY - 158*S,
-    bBotY: hY - 148*S,
-  };
-
-  // MBS windows (seeded)
-  const mbsRng = seededRng(9999);
-  mbs.towers.forEach(t => {
-    t.windows = [];
-    const cols=3, rows=Math.floor(t.h/(9*S));
-    for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
-      if (mbsRng() < 0.35) t.windows.push({
-        x: t.x+(c+0.15)/cols*t.w, y: hY-t.h+(r+0.2)/rows*t.h,
-        w: t.w/cols*0.6, h: t.h/rows*0.5,
-        br: 0.3+mbsRng()*0.35
-      });
-    }
-  });
-
-  MBS_DATA = {buildings, mbs, hY};
-}
+const bgImg = document.getElementById('bg-img');
 
 function drawMBSBackground(t) {
-  initMBSData();
-  const {buildings, mbs, hY} = MBS_DATA;
+  // cover-fit で画像を描画
+  if (bgImg.naturalWidth > 0) {
+    const scale = Math.max(W / bgImg.naturalWidth, H / bgImg.naturalHeight);
+    const dw = bgImg.naturalWidth * scale;
+    const dh = bgImg.naturalHeight * scale;
+    ctx.drawImage(bgImg, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  } else {
+    ctx.fillStyle = '#01080f';
+    ctx.fillRect(0, 0, W, H);
+  }
 
-  // Sky
-  const sky = ctx.createLinearGradient(0,0,0,hY);
-  sky.addColorStop(0,   '#01080f');
-  sky.addColorStop(0.6, '#030f1e');
-  sky.addColorStop(1,   '#0b2035');
-  ctx.fillStyle=sky; ctx.fillRect(0,0,W,hY);
+  // 暗めのオーバーレイ（クイズカードを読みやすく）
+  const overlay = ctx.createLinearGradient(0, 0, 0, H);
+  overlay.addColorStop(0,   'rgba(1,6,18,0.52)');
+  overlay.addColorStop(0.5, 'rgba(1,6,18,0.38)');
+  overlay.addColorStop(1,   'rgba(1,6,18,0.65)');
+  ctx.fillStyle = overlay;
+  ctx.fillRect(0, 0, W, H);
 
-  // Stars (twinkle)
+  // 星のきらめき（空部分に薄く重ねる）
   STARS.forEach(s => {
-    const tw = 0.7 + 0.3*Math.sin(t*0.0008*(s.r+0.5));
-    if (s.y > hY-2) return;
-    ctx.beginPath(); ctx.arc(s.x,s.y,s.r*0.8,0,Math.PI*2);
-    ctx.fillStyle=`rgba(200,220,255,${s.a*tw})`; ctx.fill();
+    if (s.y > H * 0.44) return;
+    const tw = 0.7 + 0.3 * Math.sin(t * 0.0008 * (s.r + 0.5));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r * 0.75, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(220,235,255,${s.a * tw * 0.55})`;
+    ctx.fill();
   });
 
-  // City glow
-  const hg = ctx.createRadialGradient(W*0.5,hY,0,W*0.5,hY,W*0.9);
-  hg.addColorStop(0,'rgba(160,100,30,0.35)');
-  hg.addColorStop(0.3,'rgba(120,75,20,0.15)');
-  hg.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle=hg; ctx.fillRect(0,0,W,hY);
-
-  // Water
-  const wat = ctx.createLinearGradient(0,hY,0,H);
-  wat.addColorStop(0,'#071828'); wat.addColorStop(1,'#020a14');
-  ctx.fillStyle=wat; ctx.fillRect(0,hY,W,H-hY);
-
-  // Water reflections (shimmer)
-  const sx=Math.sin(t*0.0012)*2*S, sy=Math.abs(Math.sin(t*0.0008))*3*S;
-  [...buildings, {bx:W*0.415,bw:(3*18+2*7)*S+20*S,h:80*S,
-    _r:180,_g:130,_b:60}].forEach((b,i) => {
-    const cx2 = (b.bx||0)+(b.bw||0)*0.5+sx;
-    const rg = ctx.createLinearGradient(cx2,hY,cx2,hY+b.h*0.5+sy);
-    const rr=b._r||180, rg2=b._g||130, rb=b._b||60;
-    rg.addColorStop(0,`rgba(${rr},${rg2},${rb},0.14)`);
-    rg.addColorStop(1,`rgba(${rr},${rg2},${rb},0)`);
-    ctx.fillStyle=rg;
-    ctx.fillRect(cx2-(b.bw||40*S)*0.4,hY,(b.bw||40*S)*0.8,b.h*0.5+sy);
-  });
-  // MBS pool reflection
-  const mbsCX = mbs.bL+(mbs.bR-mbs.bL)*0.5+sx;
-  const poolRg = ctx.createLinearGradient(mbsCX,hY,mbsCX,hY+70*S+sy);
-  poolRg.addColorStop(0,'rgba(80,160,240,0.22)'); poolRg.addColorStop(1,'rgba(80,160,240,0)');
-  ctx.fillStyle=poolRg; ctx.fillRect(mbsCX-30*S,hY,60*S,70*S+sy);
-
-  // Building silhouettes
-  buildings.forEach(b => {
-    ctx.fillStyle='#050f1c';
-    ctx.fillRect(b.bx,hY-b.h,b.bw,b.h);
-  });
-
-  // MBS towers
-  mbs.towers.forEach(t => {
-    ctx.fillStyle='#050f1c'; ctx.fillRect(t.x,hY-t.h,t.w,t.h);
-    const eg = ctx.createLinearGradient(t.x,0,t.x+t.w,0);
-    eg.addColorStop(0,'rgba(40,80,130,0.28)'); eg.addColorStop(1,'rgba(10,30,60,0.05)');
-    ctx.fillStyle=eg; ctx.fillRect(t.x,hY-t.h,t.w,t.h);
-  });
-
-  // MBS SkyPark boat
-  ctx.beginPath();
-  ctx.moveTo(mbs.bL,mbs.bBotY);
-  ctx.lineTo(mbs.bL,mbs.bMidY);
-  ctx.quadraticCurveTo((mbs.bL+mbs.bR)*0.5,mbs.bTopY,mbs.bR,mbs.bMidY);
-  ctx.lineTo(mbs.bR,mbs.bBotY);
-  ctx.closePath();
-  ctx.fillStyle='#050f1c'; ctx.fill();
-  // Pool glow
-  const pg = ctx.createLinearGradient(0,mbs.bTopY,0,mbs.bMidY);
-  pg.addColorStop(0,'rgba(80,160,240,0.18)'); pg.addColorStop(1,'rgba(80,160,240,0)');
-  ctx.fillStyle=pg;
-  ctx.beginPath();
-  ctx.moveTo(mbs.bL,mbs.bBotY); ctx.lineTo(mbs.bL,mbs.bMidY);
-  ctx.quadraticCurveTo((mbs.bL+mbs.bR)*0.5,mbs.bTopY,mbs.bR,mbs.bMidY);
-  ctx.lineTo(mbs.bR,mbs.bBotY); ctx.closePath(); ctx.fill();
-
-  // Window lights
-  buildings.forEach(b => b.windows.forEach(w => {
-    ctx.fillStyle=`rgba(${w.r},${w.g},${w.b},${w.br})`;
-    ctx.fillRect(w.x,w.y,w.w,w.h);
-  }));
-  mbs.towers.forEach(t => t.windows.forEach(w => {
-    ctx.fillStyle=`rgba(210,168,80,${w.br})`;
-    ctx.fillRect(w.x,w.y,w.w,w.h);
-  }));
-
-  // Vignette
-  const vig = ctx.createRadialGradient(W*0.5,H*0.45,H*0.1,W*0.5,H*0.45,H*0.85);
-  vig.addColorStop(0,'rgba(0,0,0,0)');
-  vig.addColorStop(0.65,'rgba(1,6,15,0.1)');
-  vig.addColorStop(1,'rgba(1,6,15,0.6)');
-  ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
+  // ビネット（周辺減光）
+  const vig = ctx.createRadialGradient(W * 0.5, H * 0.4, H * 0.05, W * 0.5, H * 0.4, H * 0.95);
+  vig.addColorStop(0,   'rgba(0,0,0,0)');
+  vig.addColorStop(0.55,'rgba(1,6,15,0.08)');
+  vig.addColorStop(1,   'rgba(1,6,15,0.72)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, 0, W, H);
 }
 
 /* ============================================================
@@ -973,7 +836,6 @@ function shakeQuestion(qIdx) {
 ============================================================ */
 function renderScene3(e) {
   initScene3();
-  initMBSData();
   const fadeIn = Math.min(1, e/1200);
   drawMBSBackground(e);
   if (fadeIn < 1) {
