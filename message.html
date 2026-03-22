@@ -173,20 +173,12 @@ canvas {
 .final-boxes { display:flex; justify-content:center; gap:7px; }
 .final-box {
   width:40px; height:46px;
-  border:1px solid rgba(200,169,110,0.28);
+  border:1px solid rgba(200,169,110,0.45);
   border-radius:8px;
   display:flex; align-items:center; justify-content:center;
-  font-family:'Hiragino Sans','Noto Sans JP',sans-serif;
-  font-size:20px; color:transparent;
-  background:rgba(200,169,110,0.04);
-  transition:all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-}
-.final-box.filled {
-  color:#c8a96e;
-  background:rgba(200,169,110,0.12);
-  border-color:#c8a96e;
-  box-shadow:0 0 14px rgba(200,169,110,0.3);
-  transform:scale(1.06);
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:18px; font-weight:700; color:#c8a96e;
+  background:rgba(200,169,110,0.06);
 }
 </style>
 </head>
@@ -235,12 +227,12 @@ canvas {
   <div class="final-section">
     <div class="final-top">凜ちゃんの</div>
     <div class="final-boxes">
-      <div class="final-box" id="fb-0"></div>
-      <div class="final-box" id="fb-1"></div>
-      <div class="final-box" id="fb-2"></div>
-      <div class="final-box" id="fb-3"></div>
-      <div class="final-box" id="fb-4"></div>
-      <div class="final-box" id="fb-5"></div>
+      <div class="final-box">1</div>
+      <div class="final-box">2</div>
+      <div class="final-box">3</div>
+      <div class="final-box">4</div>
+      <div class="final-box">5</div>
+      <div class="final-box">6</div>
     </div>
     <div class="final-bottom">の中を見て</div>
   </div>
@@ -871,12 +863,6 @@ function solveQuestion(qIdx) {
   document.getElementById(`qcard-${qIdx}`).classList.add('solved');
   document.getElementById(`qboxes-${qIdx}`)
     ?.querySelectorAll('.q-box').forEach(b => b.classList.remove('active-box'));
-
-  KEY_MAP.filter(k=>k[0]===qIdx).forEach(([,ci,fi]) => {
-    const ch = [...ANSWERS[qIdx]][ci];
-    const fb = document.getElementById(`fb-${fi}`);
-    if (fb) setTimeout(() => { fb.textContent=ch; fb.classList.add('filled'); }, 200);
-  });
 
   const next = solved.findIndex((s,i) => i>qIdx && !s);
   if (next>=0) setTimeout(() => document.getElementById(`q-inp-${next}`)?.focus(), 350);
